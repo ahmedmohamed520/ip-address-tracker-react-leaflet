@@ -1,36 +1,106 @@
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { styled } from "styled-components";
+import { MapContainer } from "react-leaflet/MapContainer";
+import { TileLayer } from "react-leaflet/TileLayer";
+import { useMap } from "react-leaflet/hooks";
+import { Marker, Popup } from "react-leaflet";
+import RecenterAutomatically from "./RecenterAutomatically";
 
+const key = import.meta.env.VITE_GEO_KEY;
 const App = () => {
+    const mapRef = useRef(null);
+
+    const [currentUserIp, setCurrentUserIp] = useState(0);
+    const [userInfo, setUserInfo] = useState({});
+
+    let position = [userInfo?.location?.lat, userInfo?.location?.lng];
+
+    const getCurrentUserIp = async () => {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        setCurrentUserIp(data.ip);
+    };
+    const getIPInfo = useCallback(async () => {
+        const res = await fetch(
+            `https://geo.ipify.org/api/v2/country,city?apiKey=${key}&ipAddress=${currentUserIp}`
+        );
+        const data = await res.json();
+        setUserInfo(data);
+    }, [currentUserIp]);
+
+    useEffect(() => {
+        getCurrentUserIp();
+        getIPInfo();
+    }, []);
+
     return (
         <Wrapper>
-            <div>
-                <img src="images/pattern-bg-desktop.png" alt="hero image" className="hero-image" />
+            <img src="images/pattern-bg-desktop.png" alt="hero image" className="hero-image desktop" />
+            <img src="images/pattern-bg-mobile.png" alt="hero image" className="hero-image mobile" />
+
+            <div className="map-container"></div>
+            {position[0] && (
+                <MapContainer
+                    ref={mapRef}
+                    className="map"
+                    center={position}
+                    zoom={13}
+                    scrollWheelZoom={false}
+                >
+                    <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    <RecenterAutomatically position={position} />
+                    <Marker position={position}>
+                        <Popup>
+                            A pretty CSS3 popup. <br /> Easily customizable.
+                        </Popup>
+                    </Marker>
+                </MapContainer>
+            )}
+
+            <div className="container">
                 <h1 className="heading-primary">IP Address Tracker</h1>
-                <div>
-                    <input type="text" placeholder="Search for any IP address or domain" />
-                    <div className="arrow">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        getIPInfo();
+                    }}
+                    className="input-group"
+                >
+                    <input
+                        type="text"
+                        value={currentUserIp}
+                        onChange={(e) => {
+                            setCurrentUserIp(e.target.value);
+                        }}
+                        placeholder="Search for any IP address or domain"
+                    />
+                    <button type="submit" className="arrow">
                         <img src="images/icon-arrow.svg" alt="arrow" />
-                    </div>
-                    <div>
-                        <div>
+                    </button>
+                </form>
+                {userInfo && (
+                    <div className="card">
+                        <div className="card-item">
                             <h3 className="heading-secondary">Ip address</h3>
-                            <p className="text">192.212.174.101</p>
+                            <p className="text">{userInfo?.ip}</p>
                         </div>
-                        <div>
+                        <div className="card-item">
                             <h3 className="heading-secondary">Location</h3>
-                            <p className="text">Brooklyn, NY 10001</p>
+                            <p className="text">{userInfo?.location?.region}</p>
                         </div>
-                        <div>
+                        <div className="card-item">
                             <h3 className="heading-secondary">Timezone</h3>
-                            <p className="text">UTC -05:00</p>
+                            <p className="text">{userInfo?.location?.timezone}</p>
                         </div>
-                        <div>
+                        <div className="card-item">
                             <h3 className="heading-secondary">ISP</h3>
-                            <p className="text">SpaceX Starlink</p>
+                            <p className="text">{userInfo?.isp}</p>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </Wrapper>
     );
@@ -39,8 +109,108 @@ const App = () => {
 const Wrapper = styled.div`
     position: relative;
     .hero-image {
-        position: absolute;
-        z-index: -2;
+        width: 100%;
+        height: 40vh;
+        display: block;
+    }
+
+    .map {
+        width: 100%;
+        height: 700px;
+    }
+    .input-group {
+        display: flex;
+        align-items: center;
+        height: 3rem;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+        width: 30rem;
+    }
+    .arrow {
+        background-color: #000;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        border-radius: 0 10px 10px 0;
+        transition: 0.2s all;
+        cursor: pointer;
+        border: none;
+    }
+    .arrow:hover {
+        background-color: var(--clr-gray-2);
+    }
+    .arrow:focus {
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+    .input-group input {
+        height: 100%;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 10px 0 0 10px;
+        border: none;
+    }
+    .input-group input:focus {
+        outline: none;
+        box-shadow: 0 0 10px hsl(0, 0%, 59%);
+    }
+    .card {
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px hsl(0, 0%, 59%, 0.5);
+        background-color: #fff;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    .card-item {
+        padding-right: 5rem;
+        user-select: none;
+    }
+    .card-item:not(:last-of-type) {
+        border-right: 1px solid var(--clr-gray-1);
+    }
+
+    .mobile {
+        display: none;
+    }
+
+    @media only screen and (max-width: 1200px) {
+        .card-item {
+            padding-right: 3rem;
+        }
+    }
+    @media only screen and (max-width: 900px) {
+        .card-item {
+            padding-right: 2rem;
+        }
+    }
+    @media only screen and (max-width: 704px) {
+        .hero-image {
+            height: 55vh;
+            display: block;
+        }
+        .input-group {
+            width: 100%;
+        }
+        .card {
+            grid-template-columns: 1fr;
+            width: 100%;
+        }
+        .card-item {
+            text-align: center;
+            padding: 0;
+        }
+        .card-item:not(:last-of-type) {
+            border-right: none;
+        }
+        .desktop {
+            display: none;
+        }
+        .mobile {
+            display: block;
+        }
     }
 `;
 export default App;

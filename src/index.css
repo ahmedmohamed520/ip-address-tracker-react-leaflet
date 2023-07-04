@@ -17,5 +17,36 @@ a {
     text-decoration: none;
 }
 input {
-    font-size: 1.125%;
+    font-size: 1.125rem;
+}
+.container {
+    width: 1200px;
+    max-width: 90%;
+    margin: 0 auto;
+    padding: 60px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    height: 400px;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5000;
+}
+.heading-primary {
+    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 2rem;
+}
+.heading-secondary {
+    color: var(--clr-gray-1);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+}
+.text {
+    font-weight: 700;
+    font-size: 1.5rem;
 }
