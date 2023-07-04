@@ -50,3 +50,7 @@ input {
     font-weight: 700;
     font-size: 1.5rem;
 }
+.leaflet-div-icon {
+    background: transparent;
+    border: none;
+}

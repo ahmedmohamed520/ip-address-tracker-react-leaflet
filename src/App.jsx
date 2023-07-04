@@ -1,15 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { styled } from "styled-components";
-import { MapContainer } from "react-leaflet/MapContainer";
-import { TileLayer } from "react-leaflet/TileLayer";
-import { useMap } from "react-leaflet/hooks";
-import { Marker, Popup } from "react-leaflet";
-import RecenterAutomatically from "./RecenterAutomatically";
+import CardContent from "./CardContent";
+import Map from "./Map";
 
 const key = import.meta.env.VITE_GEO_KEY;
 const App = () => {
-    const mapRef = useRef(null);
-
     const [currentUserIp, setCurrentUserIp] = useState(0);
     const [userInfo, setUserInfo] = useState({});
 
@@ -39,26 +34,7 @@ const App = () => {
             <img src="images/pattern-bg-mobile.png" alt="hero image" className="hero-image mobile" />
 
             <div className="map-container"></div>
-            {position[0] && (
-                <MapContainer
-                    ref={mapRef}
-                    className="map"
-                    center={position}
-                    zoom={13}
-                    scrollWheelZoom={false}
-                >
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    <RecenterAutomatically position={position} />
-                    <Marker position={position}>
-                        <Popup>
-                            A pretty CSS3 popup. <br /> Easily customizable.
-                        </Popup>
-                    </Marker>
-                </MapContainer>
-            )}
+            {position[0] && <Map position={position} />}
 
             <div className="container">
                 <h1 className="heading-primary">IP Address Tracker</h1>
@@ -81,26 +57,7 @@ const App = () => {
                         <img src="images/icon-arrow.svg" alt="arrow" />
                     </button>
                 </form>
-                {userInfo && (
-                    <div className="card">
-                        <div className="card-item">
-                            <h3 className="heading-secondary">Ip address</h3>
-                            <p className="text">{userInfo?.ip}</p>
-                        </div>
-                        <div className="card-item">
-                            <h3 className="heading-secondary">Location</h3>
-                            <p className="text">{userInfo?.location?.region}</p>
-                        </div>
-                        <div className="card-item">
-                            <h3 className="heading-secondary">Timezone</h3>
-                            <p className="text">{userInfo?.location?.timezone}</p>
-                        </div>
-                        <div className="card-item">
-                            <h3 className="heading-secondary">ISP</h3>
-                            <p className="text">{userInfo?.isp}</p>
-                        </div>
-                    </div>
-                )}
+                {userInfo && <CardContent userInfo={userInfo} />}
             </div>
         </Wrapper>
     );
