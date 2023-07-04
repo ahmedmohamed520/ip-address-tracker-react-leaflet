@@ -1,0 +1,21 @@
+:root {
+    --clr-gray-1: hsl(0, 0%, 59%);
+    --clr-gray-2: hsl(0, 0%, 17%);
+}
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Rubik", sans-serif;
+}
+ul {
+    list-style-type: none;
+}
+a {
+    text-decoration: none;
+}
+input {
+    font-size: 1.125%;
+}
